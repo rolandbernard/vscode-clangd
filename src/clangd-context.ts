@@ -5,6 +5,7 @@ import * as ast from './ast';
 import * as config from './config';
 import * as configFileWatcher from './config-file-watcher';
 import * as fileStatus from './file-status';
+import * as inactiveRegions from './inactive-regions';
 import * as inlayHints from './inlay-hints';
 import * as install from './install';
 import * as memoryUsage from './memory-usage';
@@ -146,6 +147,22 @@ export class ClangdContext implements vscode.Disposable {
             return symbol;
           })
         },
+        provideDocumentSemanticTokens: async (document, token, next) => {
+          const result = await next(document, token);
+          if (result) {
+            return inactiveRegions.provideDocumentSemanticTokens(document, result);
+          } else {
+            return result;
+          }
+        },
+        provideDocumentSemanticTokensEdits: async (document, previousResultId, token, next) => {
+          const result = await next(document, previousResultId, token);
+          if (result) {
+            return inactiveRegions.provideDocumentSemanticTokensEdits(document, previousResultId, result);
+          } else {
+            return result;
+          }
+        }
       },
     };
 
@@ -158,6 +175,7 @@ export class ClangdContext implements vscode.Disposable {
     this.client.registerFeature(new EnableEditsNearCursorFeature);
     typeHierarchy.activate(this);
     inlayHints.activate(this);
+    inactiveRegions.activate(this);
     memoryUsage.activate(this);
     ast.activate(this);
     openConfig.activate(this);
