@@ -38,6 +38,8 @@ class InactiveRegionsFeature implements vscodelc.StaticFeature {
     }
   }
 
+  getState(): vscodelc.FeatureState { return {kind: 'static'}; }
+
   dispose() { }
 }
 
